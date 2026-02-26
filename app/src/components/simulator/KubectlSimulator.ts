@@ -1,4 +1,4 @@
-import type { ParsedCommand, Pod, Deployment, K8sService } from '../../types'
+import type { ParsedCommand, K8sService } from '../../types'
 import { useTerminalStore } from '../../stores/terminal'
 import { ANSI } from './SimulatorEngine'
 
@@ -60,9 +60,11 @@ function kubectlGet(cmd: ParsedCommand): string {
       let filtered = store.pods
       if (ns !== '__all__') filtered = filtered.filter(p => p.namespace === ns)
 
-      const labelSelector = cmd.flags['l'] as string || cmd.flags['selector'] as string
+      const labelSelector = (cmd.flags['l'] as string) || (cmd.flags['selector'] as string)
       if (labelSelector) {
-        const [key, val] = labelSelector.split('=')
+        const parts = labelSelector.split('=')
+        const key = parts[0] || ''
+        const val = parts[1] || ''
         filtered = filtered.filter(p => p.labels[key] === val)
       }
 
@@ -283,6 +285,7 @@ function kubectlDescribe(cmd: ParsedCommand): string {
     case 'pods': {
       const pod = store.pods.find(p => p.name === name && (ns === '__all__' || p.namespace === ns))
       if (!pod) return `Error from server (NotFound): pods "${name}" not found`
+      const c0 = pod.containers[0]!
       return `${ANSI.bold}Name:${ANSI.reset}         ${pod.name}
 ${ANSI.bold}Namespace:${ANSI.reset}    ${pod.namespace}
 ${ANSI.bold}Node:${ANSI.reset}         ${pod.node}
@@ -290,17 +293,17 @@ ${ANSI.bold}Status:${ANSI.reset}       ${pod.status}
 ${ANSI.bold}IP:${ANSI.reset}           ${pod.ip}
 ${ANSI.bold}Labels:${ANSI.reset}       ${Object.entries(pod.labels).map(([k, v]) => `${k}=${v}`).join('\n              ')}
 ${ANSI.bold}Containers:${ANSI.reset}
-  ${pod.containers[0].name}:
-    Image:          ${pod.containers[0].image}
-    State:          ${pod.containers[0].state}
-    Ready:          ${pod.containers[0].ready}
+  ${c0.name}:
+    Image:          ${c0.image}
+    State:          ${c0.state}
+    Ready:          ${c0.ready}
 ${ANSI.bold}Events:${ANSI.reset}
   Type    Reason     Age   Message
   ----    ------     ----  -------
   Normal  Scheduled  ${pod.age}  Successfully assigned ${pod.namespace}/${pod.name} to ${pod.node}
   Normal  Pulled     ${pod.age}  Container image "${pod.image}" already present
-  Normal  Created    ${pod.age}  Created container ${pod.containers[0].name}
-  Normal  Started    ${pod.age}  Started container ${pod.containers[0].name}`
+  Normal  Created    ${pod.age}  Created container ${c0.name}
+  Normal  Started    ${pod.age}  Started container ${c0.name}`
     }
 
     case 'deployment':
@@ -315,7 +318,7 @@ ${ANSI.bold}StrategyType:${ANSI.reset}       ${dep.strategy}
 ${ANSI.bold}Pod Template:${ANSI.reset}
   Labels:  ${Object.entries(dep.labels).map(([k, v]) => `${k}=${v}`).join(', ')}
   Containers:
-   ${dep.image.split(':')[0].split('/').pop()}:
+   ${(dep.image.split(':')[0] || '').split('/').pop() || dep.image}:
     Image:      ${dep.image}
 ${ANSI.bold}Events:${ANSI.reset}
   Type    Reason             Age   Message
@@ -456,7 +459,7 @@ function kubectlScale(cmd: ParsedCommand): string {
   // Parse "deployment/name" format
   let depName = ''
   if (resource?.includes('/')) {
-    depName = resource.split('/')[1]
+    depName = resource.split('/')[1] || ''
   } else {
     depName = cmd.args[1] || ''
   }
@@ -477,7 +480,7 @@ function kubectlRollout(cmd: ParsedCommand): string {
 
   if (!action) return `${ANSI.red}error: must specify a subcommand${ANSI.reset}`
 
-  const depName = resource?.includes('/') ? resource.split('/')[1] : cmd.args[2] || ''
+  const depName = resource?.includes('/') ? (resource.split('/')[1] || '') : cmd.args[2] || ''
 
   switch (action) {
     case 'status': {
@@ -617,7 +620,7 @@ function kubectlCreate(cmd: ParsedCommand): string {
       const name = cmd.args[1]
       if (!name) return `${ANSI.red}error: NAME is required${ANSI.reset}`
       const data: Record<string, string> = {}
-      Object.entries(cmd.flags).forEach(([k, v]) => {
+      Object.entries(cmd.flags).forEach(([k, _v]) => {
         if (k.startsWith('from-literal')) {
           // won't match well, but handle basic case
         }

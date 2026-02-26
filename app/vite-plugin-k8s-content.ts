@@ -2,7 +2,7 @@
  * Vite plugin that parses all markdown modules at build time and exposes them
  * as a virtual module `virtual:k8s-modules`.
  */
-import { Plugin } from 'vite'
+import type { Plugin } from 'vite'
 import fs from 'fs'
 import path from 'path'
 import { parseModule, renderMarkdown } from './src/content-parser'

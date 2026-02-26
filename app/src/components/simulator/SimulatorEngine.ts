@@ -27,19 +27,19 @@ export function parseCommand(input: string): ParsedCommand {
   const flags: Record<string, string | boolean> = {}
 
   for (let i = 1; i < cleaned.length; i++) {
-    const part = cleaned[i]
+    const part = cleaned[i]!
     if (part.startsWith('--')) {
       const eqIdx = part.indexOf('=')
       if (eqIdx > 0) {
         flags[part.slice(2, eqIdx)] = part.slice(eqIdx + 1)
-      } else if (i + 1 < cleaned.length && !cleaned[i + 1].startsWith('-')) {
-        flags[part.slice(2)] = cleaned[++i]
+      } else if (i + 1 < cleaned.length && !cleaned[i + 1]!.startsWith('-')) {
+        flags[part.slice(2)] = cleaned[++i]!
       } else {
         flags[part.slice(2)] = true
       }
     } else if (part.startsWith('-') && part.length === 2) {
-      if (i + 1 < cleaned.length && !cleaned[i + 1].startsWith('-')) {
-        flags[part.slice(1)] = cleaned[++i]
+      if (i + 1 < cleaned.length && !cleaned[i + 1]!.startsWith('-')) {
+        flags[part.slice(1)] = cleaned[++i]!
       } else {
         flags[part.slice(1)] = true
       }
@@ -174,18 +174,18 @@ export function getCompletions(partial: string): string[] {
 
   if (tool === 'kubectl') {
     const subcmds = ['get', 'apply', 'delete', 'describe', 'scale', 'rollout', 'logs', 'exec', 'top', 'create', 'expose']
-    if (parts.length === 2) return subcmds.filter(c => c.startsWith(parts[1])).map(c => `kubectl ${c}`)
+    if (parts.length === 2) return subcmds.filter(c => c.startsWith(parts[1] || '')).map(c => `kubectl ${c}`)
 
-    const sub = parts[1]
+    const sub = parts[1] || ''
     if (['get', 'describe', 'delete'].includes(sub) && parts.length === 3) {
       const resources = ['pods', 'deployments', 'services', 'nodes', 'namespaces', 'replicasets', 'configmaps', 'secrets', 'events', 'all']
-      return resources.filter(r => r.startsWith(parts[2])).map(r => `kubectl ${sub} ${r}`)
+      return resources.filter(r => r.startsWith(parts[2] || '')).map(r => `kubectl ${sub} ${r}`)
     }
   }
 
   if (tool === 'docker') {
     const subcmds = ['run', 'ps', 'stop', 'rm', 'images', 'build', 'logs', 'network', 'volume', 'pull', 'exec']
-    if (parts.length === 2) return subcmds.filter(c => c.startsWith(parts[1])).map(c => `docker ${c}`)
+    if (parts.length === 2) return subcmds.filter(c => c.startsWith(parts[1] || '')).map(c => `docker ${c}`)
   }
 
   return []

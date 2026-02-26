@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import {
-  CommandLineIcon,
   MagnifyingGlassIcon,
   ClipboardDocumentIcon,
   ClipboardDocumentCheckIcon,

@@ -34,11 +34,13 @@ const totalLabs = computed(() => allModules.value.reduce((sum, m) => sum + m.lab
 const nextModule = computed(() => {
   for (const tier of tiers.value) {
     for (const mod of tier.modules) {
-      const prog = recentActivity.value.find(a => a.id === mod.id)
+      const prog = recentActivity.value.find((a: { id: string }) => a.id === mod.id)
       if (!prog) return { mod, tier }
     }
   }
-  return tiers.value[0]?.modules[0] ? { mod: tiers.value[0].modules[0], tier: tiers.value[0] } : null
+  const firstTier = tiers.value[0]
+  const firstMod = firstTier?.modules[0]
+  return firstTier && firstMod ? { mod: firstMod, tier: firstTier } : null
 })
 </script>
 
@@ -104,14 +106,15 @@ const nextModule = computed(() => {
               getTierProgress(tier.id).percentage === 100
                 ? 'border-emerald-400 bg-emerald-400/20'
                 : getTierProgress(tier.id).percentage > 0
-                ? tierColors[idx].border + ' ' + tierColors[idx].bg
+                ? (tierColors[idx]?.border || '') + ' ' + (tierColors[idx]?.bg || '')
                 : 'border-slate-700 bg-slate-800'
             ]"
           >
             <CheckCircleIcon v-if="getTierProgress(tier.id).percentage === 100" class="w-4 h-4 text-emerald-400" />
-            <component v-else :is="tierIcons[idx]" class="w-4 h-4" :class="getTierProgress(tier.id).percentage > 0 ? tierColors[idx].ring : 'text-slate-600'" />
+            <component v-else :is="tierIcons[idx]" class="w-4 h-4" :class="getTierProgress(tier.id).percentage > 0 ? tierColors[idx]?.ring : 'text-slate-600'" />
           </div>
-          <span class="text-xs" :class="getTierProgress(tier.id).percentage > 0 ? 'text-slate-300' : 'text-slate-600'">
+          <span class="text-xs" :class="getTierProgress(tier.id).percentage > 0 ? 'text-slate-300' : 'text-slate-600'"
+          >
             {{ tier.name }}
           </span>
         </div>
@@ -124,7 +127,7 @@ const nextModule = computed(() => {
         v-for="(tier, idx) in tiers"
         :key="tier.id"
         class="p-6 rounded-xl bg-slate-900/50 border transition-all duration-200 text-left hover:border-slate-600 hover:bg-slate-800/50"
-        :class="tierColors[idx].border"
+        :class="tierColors[idx]?.border"
         @click="router.push(`/tier/${tier.id}`)"
       >
         <div class="flex items-start gap-4">
@@ -134,13 +137,13 @@ const nextModule = computed(() => {
               <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor"
                 class="text-slate-800" stroke-width="4" />
               <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor"
-                :class="tierColors[idx].ring" stroke-width="4" stroke-linecap="round"
+                :class="tierColors[idx]?.ring" stroke-width="4" stroke-linecap="round"
                 :stroke-dasharray="175.93"
                 :stroke-dashoffset="175.93 - (175.93 * getTierProgress(tier.id).percentage / 100)"
                 class="transition-all duration-700" />
             </svg>
             <div class="absolute inset-0 flex items-center justify-center">
-              <component :is="tierIcons[idx]" class="w-6 h-6" :class="tierColors[idx].ring" />
+              <component :is="tierIcons[idx]" class="w-6 h-6" :class="tierColors[idx]?.ring" />
             </div>
           </div>
 

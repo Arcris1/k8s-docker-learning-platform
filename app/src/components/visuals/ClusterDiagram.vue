@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 import { useTerminalStore } from '../../stores/terminal'
 
 const store = useTerminalStore()
@@ -52,7 +52,7 @@ const visualNodes = computed<VisualNode[]>(() => {
   })
 
   // Pods (default namespace only, user-created)
-  store.pods.filter(p => p.namespace === 'default').forEach((p, i) => {
+  store.pods.filter(p => p.namespace === 'default').forEach((p) => {
     const workerIdx = p.node === 'worker-1' ? 0 : 1
     const podsOnNode = store.pods.filter(pp => pp.namespace === 'default' && pp.node === p.node)
     const podIdx = podsOnNode.indexOf(p)

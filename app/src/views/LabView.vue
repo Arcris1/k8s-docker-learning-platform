@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, nextTick } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Splitpanes, Pane } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
@@ -18,7 +18,6 @@ import {
   ArrowPathIcon,
   LightBulbIcon,
   ChevronLeftIcon,
-  ChevronRightIcon,
   EyeIcon,
 } from '@heroicons/vue/24/outline'
 
@@ -77,14 +76,6 @@ function showNextHint() {
   if (!currentStep.value) return
   showHint.value = true
   hintLevel.value = Math.min(hintLevel.value + 1, currentStep.value.hints.length)
-}
-
-function goToStep(index: number) {
-  if (!lab.value) return
-  // Allow navigating to completed steps or the next step
-  if (index <= currentStepIndex.value || labProgress.value?.stepsCompleted.includes(index)) {
-    // Just scroll to that step
-  }
 }
 
 function handleCommandExecuted(command: string, output: string) {

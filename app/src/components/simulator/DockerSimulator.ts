@@ -40,7 +40,6 @@ function dockerRun(cmd: ParsedCommand): string {
   const name = cmd.flags['name'] as string | undefined
   const ports = cmd.flags['p'] as string | undefined
   const network = cmd.flags['network'] as string | undefined
-  const rm = cmd.flags['rm'] === true
   const interactive = cmd.flags['it'] === true || cmd.flags['i'] === true
 
   // Image is the last positional arg
@@ -123,9 +122,8 @@ function dockerRm(cmd: ParsedCommand): string {
   return nameOrId
 }
 
-function dockerImages(cmd: ParsedCommand): string {
+function dockerImages(_cmd: ParsedCommand): string {
   const store = useTerminalStore()
-  const showAll = cmd.flags['a'] === true
 
   const header = tableRow([
     { val: 'REPOSITORY', width: 24 }, { val: 'TAG', width: 16 },
@@ -143,8 +141,7 @@ function dockerImages(cmd: ParsedCommand): string {
 }
 
 function dockerBuild(cmd: ParsedCommand): string {
-  const tag = cmd.flags['t'] as string || cmd.flags['tag'] as string || 'latest'
-  const context = cmd.args[0] || '.'
+  const tag = (cmd.flags['t'] as string) || (cmd.flags['tag'] as string) || 'latest'
 
   const steps = [
     `${ANSI.bold}[+] Building${ANSI.reset}`,
@@ -164,7 +161,7 @@ function dockerBuild(cmd: ParsedCommand): string {
 
   // Add image to store
   const store = useTerminalStore()
-  const [repo, tagPart] = tag.includes(':') ? tag.split(':') : [tag, 'latest']
+  const [repo = tag, tagPart = 'latest'] = tag.includes(':') ? tag.split(':') : [tag, 'latest']
   if (!store.images.find(i => i.repository === repo && i.tag === tagPart)) {
     store.images.push({ repository: repo, tag: tagPart, id: Array.from({ length: 12 }, () => Math.floor(Math.random() * 16).toString(16)).join(''), size: '145MB', created: 'Just now' })
   }
@@ -282,7 +279,7 @@ function dockerPull(cmd: ParsedCommand): string {
   const image = cmd.args[0]
   if (!image) return `${ANSI.red}"docker pull" requires exactly 1 argument.${ANSI.reset}`
 
-  const [repo, tag] = image.includes(':') ? image.split(':') : [image, 'latest']
+  const [repo = image, tag = 'latest'] = image.includes(':') ? image.split(':') : [image, 'latest']
 
   if (!store.images.find(i => i.repository === repo && i.tag === tag)) {
     store.images.push({

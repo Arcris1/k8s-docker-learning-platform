@@ -62,8 +62,8 @@ function extractSections(content: string): Section[] {
   for (const line of lines) {
     const match = line.match(/^(#{2,3})\s+(.+)$/)
     if (!match) continue
-    const level = match[1].length
-    const title = match[2].trim()
+    const level = match[1]!.length
+    const title = match[2]!.trim()
     const section: Section = {
       id: slugify(title),
       title,
@@ -76,7 +76,7 @@ function extractSections(content: string): Section[] {
       stack.length = 0
       stack.push({ level, section })
     } else if (level === 3 && stack.length > 0) {
-      const parent = stack[stack.length - 1]
+      const parent = stack[stack.length - 1]!
       if (parent.level < level) {
         parent.section.children.push(section)
       }
@@ -90,7 +90,7 @@ function extractObjectives(content: string): string[] {
     /## Learning Objectives\s*\n([\s\S]*?)(?=\n##\s)/
   )
   if (!objectivesMatch) return []
-  const block = objectivesMatch[1]
+  const block = objectivesMatch[1]!
   return block
     .split('\n')
     .filter((l) => /^\d+\./.test(l.trim()))
@@ -100,7 +100,7 @@ function extractObjectives(content: string): string[] {
 function extractKeyTakeaways(content: string): string[] {
   const match = content.match(/## Key Takeaways\s*\n([\s\S]*?)(?=\n##\s|$)/)
   if (!match) return []
-  return match[1]
+  return match[1]!
     .split('\n')
     .filter((l) => /^\d+\./.test(l.trim()))
     .map((l) => l.replace(/^\d+\.\s*/, '').trim().replace(/\*\*/g, ''))
@@ -111,7 +111,7 @@ function extractCodeBlocks(content: string): ParsedCodeBlock[] {
   const regex = /```(\w*)(.*?)\n([\s\S]*?)```/g
   let match
   while ((match = regex.exec(content)) !== null) {
-    const code = match[3].trim()
+    const code = (match[3] || '').trim()
     blocks.push({
       language: match[1] || 'text',
       code,
@@ -127,7 +127,7 @@ function extractCheckpoints(content: string): Checkpoint[] {
     /## Checkpoint.*?\n([\s\S]*?)(?=\n## (?!Checkpoint)|$)/
   )
   if (!match) return []
-  const block = match[1]
+  const block = match[1]!
   const questions: Checkpoint[] = []
   const qRegex = /\d+\.\s+\*\*(\w+)\*\*\s+(.*?)(?=\n\d+\.\s|\n$|$)/gs
   let qMatch
@@ -135,7 +135,7 @@ function extractCheckpoints(content: string): Checkpoint[] {
   while ((qMatch = qRegex.exec(block)) !== null) {
     questions.push({
       id: `checkpoint-${idx}`,
-      question: `${qMatch[1]} ${qMatch[2].trim()}`,
+      question: `${qMatch[1] || ''} ${(qMatch[2] || '').trim()}`,
       options: [],
       correctIndex: 0,
       explanation: '',
@@ -147,8 +147,6 @@ function extractCheckpoints(content: string): Checkpoint[] {
 
 function extractLabs(content: string, moduleId: string): Lab[] {
   const labs: Lab[] = []
-  const labRegex =
-    /## \d+\.\s*Hands-On Lab.*?|## Hands-On Lab.*?/g
   const labSections: { start: number; title: string }[] = []
 
   const lines = content.split('\n')
@@ -159,8 +157,9 @@ function extractLabs(content: string, moduleId: string): Lab[] {
   })
 
   labSections.forEach((labSection, labIdx) => {
-    const endIdx = labIdx < labSections.length - 1
-      ? labSections[labIdx + 1].start
+    const nextSection = labSections[labIdx + 1]
+    const endIdx = nextSection
+      ? nextSection.start
       : lines.findIndex((l, i) => i > labSection.start && /^## (?!#)/.test(l) && !/Lab|Hands-On/.test(l))
 
     const labContent = lines.slice(labSection.start, endIdx > 0 ? endIdx : undefined).join('\n')
@@ -173,7 +172,7 @@ function extractLabs(content: string, moduleId: string): Lab[] {
     while ((exMatch = exerciseRegex.exec(labContent)) !== null) {
       steps.push({
         id: `step-${stepIdx}`,
-        instruction: exMatch[1].trim(),
+        instruction: (exMatch[1] || '').trim(),
         expectedCommands: [],
         hints: [],
       })
@@ -208,14 +207,16 @@ export function parseModule(
 
   // Extract module number and title from first H1
   const h1Match = rawContent.match(/^#\s+(.+)$/m)
-  const fullTitle = h1Match ? h1Match[1].trim() : 'Untitled'
+  const fullTitle = h1Match ? (h1Match[1] || '').trim() : 'Untitled'
   const numMatch = fullTitle.match(/Module\s+(\d+)[:\s]+(.+)/)
-  const number = numMatch ? parseInt(numMatch[1], 10) : 0
-  const title = numMatch ? numMatch[2].trim() : fullTitle
+  const number = numMatch ? parseInt(numMatch[1]!, 10) : 0
+  const title = numMatch ? (numMatch[2] || '').trim() : fullTitle
 
   // Determine tier from file path
   const tierDir = Object.keys(TIER_MAP).find((t) => filePath.includes(t))
-  const { tier, tierName } = tierDir ? TIER_MAP[tierDir] : { tier: 0, tierName: 'Unknown' }
+  const tierInfo = tierDir ? TIER_MAP[tierDir] : undefined
+  const tier = tierInfo?.tier ?? 0
+  const tierName = tierInfo?.tierName ?? 'Unknown'
 
   const slug = slugify(fullTitle)
   const id = `module-${String(number).padStart(2, '0')}`

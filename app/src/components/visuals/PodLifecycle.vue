@@ -62,8 +62,8 @@ defineExpose({ play, pause, reset, setState: (idx: number) => { currentState.val
         <!-- State circle -->
         <circle
           :cx="i * 130 + 60" cy="50" r="24"
-          :fill="i === currentState ? stateColors[state].bg : '#0f172a'"
-          :stroke="i === currentState ? stateColors[state].border : '#334155'"
+          :fill="i === currentState ? stateColors[state]?.bg : '#0f172a'"
+          :stroke="i === currentState ? stateColors[state]?.border : '#334155'"
           stroke-width="2"
           class="transition-all duration-500"
         />
@@ -71,7 +71,7 @@ defineExpose({ play, pause, reset, setState: (idx: number) => { currentState.val
           v-if="i === currentState"
           :cx="i * 130 + 60" cy="50" r="28"
           fill="none"
-          :stroke="stateColors[state].border"
+          :stroke="stateColors[state]?.border"
           stroke-width="1" opacity="0.4"
           class="animate-ping"
         />
@@ -80,7 +80,7 @@ defineExpose({ play, pause, reset, setState: (idx: number) => { currentState.val
         <text
           :x="i * 130 + 60" y="88"
           text-anchor="middle"
-          :fill="i === currentState ? stateColors[state].border : '#64748b'"
+          :fill="i === currentState ? stateColors[state]?.border : '#64748b'"
           font-size="10" font-weight="500"
           class="transition-all duration-300"
         >
@@ -91,7 +91,7 @@ defineExpose({ play, pause, reset, setState: (idx: number) => { currentState.val
         <text
           :x="i * 130 + 60" y="54"
           text-anchor="middle"
-          :fill="i === currentState ? stateColors[state].border : '#475569'"
+          :fill="i === currentState ? stateColors[state]?.border : '#475569'"
           font-size="14"
         >
           {{ i === 0 ? '...' : i === 1 ? '+' : i === 2 ? '>' : i === 3 ? 'x' : '-' }}

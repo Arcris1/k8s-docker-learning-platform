@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import type {
   K8sNode, Pod, Deployment, ReplicaSet, K8sService, ConfigMap,
   K8sSecret, DockerContainer, DockerImage, DockerNetwork, DockerVolume,
@@ -10,12 +10,6 @@ let nextPodIp = 10
 
 function genPodIp() {
   return `10.244.0.${nextPodIp++}`
-}
-
-function genAge(minutes: number): string {
-  if (minutes < 60) return `${minutes}m`
-  if (minutes < 1440) return `${Math.floor(minutes / 60)}h`
-  return `${Math.floor(minutes / 1440)}d`
 }
 
 function genId(len = 12): string {
@@ -133,7 +127,7 @@ export const useTerminalStore = defineStore('terminal', () => {
     return {
       name, namespace: ns, status, ready: status === 'Running' ? '1/1' : '0/1',
       restarts: 0, age: '7d', ip: genPodIp(), node, labels, image,
-      containers: [{ name: name.split('-')[0], image, ports: [], ready: status === 'Running', state: status }],
+      containers: [{ name: name.split('-')[0] || name, image, ports: [], ready: status === 'Running', state: status }],
     }
   }
 
@@ -142,21 +136,21 @@ export const useTerminalStore = defineStore('terminal', () => {
     const pod: Pod = {
       name, namespace: ns, status: 'Running', ready: '1/1',
       restarts: 0, age: '0s', ip: genPodIp(), node, labels, image,
-      containers: [{ name: image.split(':')[0].split('/').pop() || 'app', image, ports: [], ready: true, state: 'Running' }],
+      containers: [{ name: (image.split(':')[0] || '').split('/').pop() || 'app', image, ports: [], ready: true, state: 'Running' }],
       ownerRef,
     }
     pods.value.push(pod)
     addEvent('Normal', 'Scheduled', `pod/${name}`, `Successfully assigned ${ns}/${name} to ${node}`)
     addEvent('Normal', 'Pulled', `pod/${name}`, `Container image "${image}" already present on machine`)
-    addEvent('Normal', 'Created', `pod/${name}`, `Created container ${pod.containers[0].name}`)
-    addEvent('Normal', 'Started', `pod/${name}`, `Started container ${pod.containers[0].name}`)
+    addEvent('Normal', 'Created', `pod/${name}`, `Created container ${pod.containers[0]!.name}`)
+    addEvent('Normal', 'Started', `pod/${name}`, `Started container ${pod.containers[0]!.name}`)
     return pod
   }
 
   function deletePod(name: string, ns: string) {
     const idx = pods.value.findIndex(p => p.name === name && p.namespace === ns)
     if (idx >= 0) {
-      pods.value[idx].status = 'Terminating'
+      pods.value[idx]!.status = 'Terminating'
       setTimeout(() => {
         pods.value = pods.value.filter(p => !(p.name === name && p.namespace === ns))
       }, 300)
@@ -181,7 +175,7 @@ export const useTerminalStore = defineStore('terminal', () => {
 
     for (let i = 0; i < replicas; i++) {
       const podName = `${rsName}-${genId(5)}`
-      addPod(podName, ns, image, { ...labels, 'pod-template-hash': rs.labels['pod-template-hash'] }, rsName)
+      addPod(podName, ns, image, { ...labels, 'pod-template-hash': rs.labels['pod-template-hash'] || '' }, rsName)
     }
 
     addEvent('Normal', 'ScalingReplicaSet', `deployment/${name}`, `Scaled up replica set ${rsName} to ${replicas}`)
@@ -201,7 +195,7 @@ export const useTerminalStore = defineStore('terminal', () => {
     if (diff > 0) {
       for (let i = 0; i < diff; i++) {
         const podName = `${rs.name}-${genId(5)}`
-        addPod(podName, ns, dep.image, { ...dep.labels, 'pod-template-hash': rs.labels['pod-template-hash'] }, rs.name)
+        addPod(podName, ns, dep.image, { ...dep.labels, 'pod-template-hash': rs.labels['pod-template-hash'] || '' }, rs.name)
       }
     } else if (diff < 0) {
       const toRemove = currentPods.slice(0, Math.abs(diff))
@@ -256,7 +250,7 @@ export const useTerminalStore = defineStore('terminal', () => {
   }
 
   // Docker operations
-  function dockerRun(image: string, name?: string, detach = true, ports?: string, network?: string): DockerContainer {
+  function dockerRun(image: string, name?: string, _detach = true, ports?: string, network?: string): DockerContainer {
     const c: DockerContainer = {
       id: genId(),
       name: name || `${image.replace(/[/:]/g, '_')}_${genShortId().slice(0, 6)}`,
@@ -269,7 +263,7 @@ export const useTerminalStore = defineStore('terminal', () => {
     }
     containers.value.push(c)
     if (!images.value.find(i => `${i.repository}:${i.tag}` === image || i.repository === image)) {
-      const [repo, tag] = image.includes(':') ? image.split(':') : [image, 'latest']
+      const [repo = image, tag = 'latest'] = image.includes(':') ? image.split(':') : [image, 'latest']
       images.value.push({ repository: repo, tag, id: genId(), size: '100MB', created: 'Just now' })
     }
     return c

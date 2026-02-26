@@ -1,10 +1,8 @@
-import { ref, watch } from 'vue'
-import { useTerminalStore } from '../stores/terminal'
+import { ref } from 'vue'
 
 export type VisualPanel = 'cluster' | 'pod-lifecycle' | 'deployment' | 'network' | 'none'
 
 export function useAnimationController() {
-  const store = useTerminalStore()
   const activePanel = ref<VisualPanel>('cluster')
   const lastEventType = ref('')
 

@@ -1,4 +1,4 @@
-import { ref, type Ref } from 'vue'
+import { ref } from 'vue'
 import { useTerminalStore } from '../stores/terminal'
 import type { ClusterStateFixture } from '../types'
 

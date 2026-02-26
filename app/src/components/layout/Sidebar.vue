@@ -72,7 +72,7 @@ defineProps<{ collapsed: boolean }>()
         <component
           :is="item.icon"
           class="w-5 h-5 flex-shrink-0"
-          :class="item.color || (isActive(item.path) ? 'text-cyan-400' : '')"
+          :class="('color' in item && item.color) || (isActive(item.path) ? 'text-cyan-400' : '')"
         />
         <span v-if="!collapsed" class="truncate">{{ item.name }}</span>
       </button>

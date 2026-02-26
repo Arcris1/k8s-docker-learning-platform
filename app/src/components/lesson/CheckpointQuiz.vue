@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import type { Checkpoint } from '../../types'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/vue/24/outline'
 

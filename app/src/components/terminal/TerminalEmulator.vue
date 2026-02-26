@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { onMounted, onBeforeUnmount, ref } from 'vue'
 import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import { WebLinksAddon } from '@xterm/addon-web-links'
@@ -141,7 +141,7 @@ onMounted(() => {
         if (history.length > 0) {
           if (historyIndex === -1) historyIndex = history.length
           historyIndex = Math.max(0, historyIndex - 1)
-          currentLine = history[historyIndex] || ''
+          currentLine = (historyIndex >= 0 && historyIndex < history.length ? history[historyIndex] : '') || ''
           cursorPos = currentLine.length
           redrawLine()
         }
@@ -152,7 +152,7 @@ onMounted(() => {
         const history = store.commandHistory
         if (historyIndex >= 0) {
           historyIndex = Math.min(history.length, historyIndex + 1)
-          currentLine = historyIndex < history.length ? history[historyIndex] : ''
+          currentLine = historyIndex < history.length ? (history[historyIndex] || '') : ''
           cursorPos = currentLine.length
           redrawLine()
         }
