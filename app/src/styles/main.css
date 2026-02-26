@@ -1,0 +1,70 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-slate-950: #0a0f1a;
+  --color-slate-900: #0f172a;
+  --color-slate-800: #1e293b;
+  --color-slate-700: #334155;
+  --color-slate-600: #475569;
+  --color-slate-500: #64748b;
+  --color-slate-400: #94a3b8;
+  --color-slate-300: #cbd5e1;
+  --color-slate-200: #e2e8f0;
+  --color-cyan-400: #22d3ee;
+  --color-cyan-500: #06b6d4;
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-amber-400: #fbbf24;
+  --color-violet-400: #a78bfa;
+  --color-rose-400: #fb7185;
+}
+
+/* Base dark theme */
+html {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-slate-950 text-slate-200 antialiased;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-700 rounded;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-600;
+}
+
+/* Prose overrides for dark theme */
+.prose-k8s {
+  --tw-prose-body: var(--color-slate-300);
+  --tw-prose-headings: var(--color-slate-100);
+  --tw-prose-links: var(--color-cyan-400);
+  --tw-prose-bold: var(--color-slate-100);
+  --tw-prose-code: var(--color-emerald-400);
+  --tw-prose-pre-bg: var(--color-slate-900);
+  --tw-prose-pre-code: var(--color-slate-300);
+  --tw-prose-th-borders: var(--color-slate-700);
+  --tw-prose-td-borders: var(--color-slate-800);
+}
+
+/* Terminal cursor blink */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}

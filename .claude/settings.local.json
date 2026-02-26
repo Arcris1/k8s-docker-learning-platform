@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(netstat:*)",
+      "Bash(node:*)",
+      "Bash(wc:*)",
+      "Bash(cd /c/Users/Silang/Documents/tutorials/kuberneter-docker && npm create vite@latest app -- --template vue-ts 2>&1)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(true:*)",
+      "Bash(cd /c/Users/Silang/Documents/tutorials/kuberneter-docker/app && npx vite build 2>&1)"
+    ]
+  }
+}
