@@ -5,5 +5,5 @@ services:
       dockerfile: Dockerfile
     container_name: k8s-learning-platform
     ports:
-      - "80:80"
+      - "6969:6969"
     restart: unless-stopped
